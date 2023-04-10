@@ -1,5 +1,5 @@
 import { isFunction, map, filter, fromPairs, noop } from "lodash";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import Tooltip from "@/components/Tooltip";
 import Button from "antd/lib/button";
@@ -9,6 +9,7 @@ import KeyboardShortcuts, { humanReadableShortcut } from "@/services/KeyboardSho
 import AutocompleteToggle from "./AutocompleteToggle";
 import "./QueryEditorControls.less";
 import AutoLimitCheckbox from "@/components/queries/QueryEditor/AutoLimitCheckbox";
+import { currentUser } from "@/services/auth";
 
 export function ButtonTooltip({ title, shortcut, ...props }) {
   shortcut = humanReadableShortcut(shortcut, 1); // show only primary shortcut
@@ -42,19 +43,29 @@ export default function EditorControl({
   autoLimitCheckboxProps,
   dataSourceSelectorProps,
 }) {
+  const [customExecuteDisabledLogic, setCustomExecuteDisabledLogic] = useState(false);
+
+  useEffect(() => {
+    setInterval(() => {
+      setCustomExecuteDisabledLogic(currentUser.isAdmin ? false : new Date().getHours() > 7 && new Date().getHours() < 12);
+    }, 60000);
+  }, []);
+
   useEffect(() => {
     const buttons = filter(
       [addParameterButtonProps, formatButtonProps, saveButtonProps, executeButtonProps],
       b => b.shortcut && isFunction(b.onClick)
-    );
-    if (buttons.length > 0) {
+      );
+      if (buttons.length > 0) {
       const shortcuts = fromPairs(map(buttons, b => [b.shortcut, b.disabled ? noop : b.onClick]));
+      customExecuteDisabledLogic && delete(shortcuts['mod+enter, alt+enter, ctrl+enter, shift+enter']);
       KeyboardShortcuts.bind(shortcuts);
       return () => {
         KeyboardShortcuts.unbind(shortcuts);
       };
     }
   }, [addParameterButtonProps, formatButtonProps, saveButtonProps, executeButtonProps]);
+
 
   return (
     <div className="query-editor-controls">
@@ -115,13 +126,13 @@ export default function EditorControl({
         </ButtonTooltip>
       )}
       {executeButtonProps !== false && (
-        <ButtonTooltip title={executeButtonProps.title} shortcut={executeButtonProps.shortcut}>
+        <ButtonTooltip title={customExecuteDisabledLogic ? 'Action disabled' : executeButtonProps.title} shortcut={customExecuteDisabledLogic ? null : executeButtonProps.shortcut}>
           <Button
             className="query-editor-controls-button m-l-5"
             type="primary"
-            disabled={executeButtonProps.disabled}
+            disabled={executeButtonProps.disabled || customExecuteDisabledLogic}
             onClick={executeButtonProps.onClick}
-            data-test="ExecuteButton">
+            data-test="ExecuteButton">  
             <span className="zmdi zmdi-play" />
             {executeButtonProps.text}
           </Button>
