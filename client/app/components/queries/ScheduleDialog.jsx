@@ -12,6 +12,7 @@ import { wrap as wrapDialog, DialogPropType } from "@/components/DialogWrapper";
 import { RefreshScheduleType, RefreshScheduleDefault, Moment } from "../proptypes";
 
 import "./ScheduleDialog.css";
+import { currentUser } from "@/services/auth";
 
 const WEEKDAYS_SHORT = moment.weekdaysShort();
 const WEEKDAYS_FULL = moment.weekdays();
@@ -30,7 +31,16 @@ export function TimeEditor(props) {
 
   return (
     <React.Fragment>
-      <TimePicker allowClear={false} value={time} format={HOUR_FORMAT} minuteStep={5} onChange={onChange} />
+      <TimePicker
+        allowClear={false}
+        value={time}
+        format={HOUR_FORMAT}
+        minuteStep={5}
+        onChange={onChange}
+        disabledHours={() => {
+          return currentUser.isAdmin ? [] : [7, 8, 9, 10, 11];
+        }}
+      />
       {showUtc && (
         <span className="utc" data-testid="utc">
           ({moment.utc(time).format(HOUR_FORMAT)} UTC)
@@ -208,7 +218,11 @@ class ScheduleDialog extends React.Component {
                 Never
               </Option>
               {Object.keys(this.intervals)
-                .filter(int => !isEmpty(this.intervals[int]))
+                .filter(int => {
+                  if ((!currentUser.isAdmin && int === IntervalEnum.MINUTES) || int === IntervalEnum.HOURS)
+                    return false;
+                  return !isEmpty(this.intervals[int]);
+                })
                 .map(int => (
                   <OptGroup label={capitalize(pluralize(int))} key={int}>
                     {this.intervals[int].map(([cnt, secs]) => (
