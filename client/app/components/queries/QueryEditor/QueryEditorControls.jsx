@@ -43,11 +43,11 @@ export default function EditorControl({
   autoLimitCheckboxProps,
   dataSourceSelectorProps,
 }) {
-  const [customExecuteDisabledLogic, setCustomExecuteDisabledLogic] = useState(false);
+  const [customExecuteDisabledLogic, setCustomExecuteDisabledLogic] = useState(currentUser.canExecuteTasks());
 
   useEffect(() => {
     setInterval(() => {
-      setCustomExecuteDisabledLogic(currentUser.isAdmin ? false : new Date().getHours() > 7 && new Date().getHours() < 12);
+      setCustomExecuteDisabledLogic(currentUser.canExecuteTasks());
     }, 60000);
   }, []);
 
@@ -55,17 +55,16 @@ export default function EditorControl({
     const buttons = filter(
       [addParameterButtonProps, formatButtonProps, saveButtonProps, executeButtonProps],
       b => b.shortcut && isFunction(b.onClick)
-      );
-      if (buttons.length > 0) {
+    );
+    if (buttons.length > 0) {
       const shortcuts = fromPairs(map(buttons, b => [b.shortcut, b.disabled ? noop : b.onClick]));
-      customExecuteDisabledLogic && delete(shortcuts['mod+enter, alt+enter, ctrl+enter, shift+enter']);
+      customExecuteDisabledLogic && delete shortcuts["mod+enter, alt+enter, ctrl+enter, shift+enter"];
       KeyboardShortcuts.bind(shortcuts);
       return () => {
         KeyboardShortcuts.unbind(shortcuts);
       };
     }
-  }, [addParameterButtonProps, formatButtonProps, saveButtonProps, executeButtonProps]);
-
+  }, [addParameterButtonProps, formatButtonProps, saveButtonProps, executeButtonProps, customExecuteDisabledLogic]);
 
   return (
     <div className="query-editor-controls">
@@ -126,13 +125,15 @@ export default function EditorControl({
         </ButtonTooltip>
       )}
       {executeButtonProps !== false && (
-        <ButtonTooltip title={customExecuteDisabledLogic ? 'Action disabled' : executeButtonProps.title} shortcut={customExecuteDisabledLogic ? null : executeButtonProps.shortcut}>
+        <ButtonTooltip
+          title={customExecuteDisabledLogic ? "Action disabled" : executeButtonProps.title}
+          shortcut={customExecuteDisabledLogic ? null : executeButtonProps.shortcut}>
           <Button
             className="query-editor-controls-button m-l-5"
             type="primary"
             disabled={executeButtonProps.disabled || customExecuteDisabledLogic}
             onClick={executeButtonProps.onClick}
-            data-test="ExecuteButton">  
+            data-test="ExecuteButton">
             <span className="zmdi zmdi-play" />
             {executeButtonProps.text}
           </Button>
