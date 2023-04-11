@@ -39,6 +39,7 @@ import useDeleteVisualization from "./hooks/useDeleteVisualization";
 import useFullscreenHandler from "../../lib/hooks/useFullscreenHandler";
 
 import "./QueryView.less";
+import useUserRestriction from "./hooks/useUserRestriction";
 
 function QueryView(props) {
   const [query, setQuery] = useState(props.query);
@@ -62,6 +63,8 @@ function QueryView(props) {
     isCancelling: isExecutionCancelling,
     updatedAt,
   } = useQueryExecute(query);
+
+  const isUserRestricted = useUserRestriction();
 
   const queryResultData = useQueryResultData(queryResult);
 
@@ -106,7 +109,7 @@ function QueryView(props) {
           selectedVisualization={selectedVisualization}
           headerExtra={
             <DynamicComponent name="QueryView.HeaderExtra" query={query}>
-              {policy.canRun(query) && (
+              {policy.canRun(query) && !isUserRestricted && (
                 <QueryViewButton
                   className="m-r-5"
                   type="primary"
