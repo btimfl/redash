@@ -43,12 +43,14 @@ export default function EditorControl({
   autoLimitCheckboxProps,
   dataSourceSelectorProps,
 }) {
-  const [customExecuteDisabledLogic, setCustomExecuteDisabledLogic] = useState(currentUser.canExecuteTasks());
+  const [customExecuteDisabledLogic, setCustomExecuteDisabledLogic] = useState(currentUser.isUserRestricted());
 
   useEffect(() => {
-    setInterval(() => {
-      setCustomExecuteDisabledLogic(currentUser.canExecuteTasks());
+    const interval = setInterval(() => {
+      setCustomExecuteDisabledLogic(currentUser.isUserRestricted());
     }, 60000);
+
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {

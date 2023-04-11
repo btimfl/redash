@@ -25,12 +25,12 @@ export const currentUser = {
     return includes(this.permissions, permission);
   },
 
-  canExecuteTasks() {
+  isUserRestricted() {
     const isAdmin = this.hasPermission("admin");
 
-    if (isAdmin) return true;
+    if (isAdmin) return false;
 
-    return !(new Date().getHours() > 7 && new Date().getHours() < 12);
+    return new Date().getHours() > 7 && new Date().getHours() < 12;
   },
 
   get isAdmin() {
