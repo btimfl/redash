@@ -20,6 +20,7 @@ import { durationHumanize } from "@/lib/utils";
 import { DashboardStatusEnum } from "../hooks/useDashboard";
 
 import "./DashboardHeader.less";
+import useUserRestriction from "@/pages/queries/hooks/useUserRestriction";
 
 function getDashboardTags() {
   return getTags("api/dashboards/tags").then(tags => map(tags, t => t.name));
@@ -76,15 +77,19 @@ function RefreshButton({ dashboardConfiguration }) {
       disableRefreshRate();
     }
   };
+
+  const isUserRestricted = useUserRestriction();
+
   return (
     <Button.Group>
       <Tooltip title={refreshRate ? `Auto Refreshing every ${durationHumanize(refreshRate)}` : null}>
-        <Button type={buttonType(refreshRate)} onClick={() => refreshDashboard()}>
+        <Button type={buttonType(refreshRate)} onClick={() => refreshDashboard()} disabled={isUserRestricted}>
           <i className={cx("zmdi zmdi-refresh m-r-5", { "zmdi-hc-spin": refreshing })} aria-hidden="true" />
           {refreshRate ? durationHumanize(refreshRate) : "Refresh"}
         </Button>
       </Tooltip>
       <Dropdown
+        disabled={isUserRestricted}
         trigger={["click"]}
         placement="bottomRight"
         overlay={

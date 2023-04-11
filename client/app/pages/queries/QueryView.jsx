@@ -109,12 +109,13 @@ function QueryView(props) {
           selectedVisualization={selectedVisualization}
           headerExtra={
             <DynamicComponent name="QueryView.HeaderExtra" query={query}>
-              {policy.canRun(query) && !isUserRestricted && (
+              {policy.canRun(query) && (
                 <QueryViewButton
                   className="m-r-5"
                   type="primary"
-                  shortcut="mod+enter, alt+enter, ctrl+enter"
-                  disabled={!queryFlags.canExecute || isExecuting || areParametersDirty}
+                  title={isUserRestricted ? "Action Disabled" : null}
+                  shortcut={isUserRestricted ? null : "mod+enter, alt+enter, ctrl+enter"}
+                  disabled={!queryFlags.canExecute || isExecuting || areParametersDirty || isUserRestricted}
                   onClick={doExecuteQuery}>
                   Refresh
                 </QueryViewButton>
