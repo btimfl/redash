@@ -13,6 +13,7 @@ import { RefreshScheduleType, RefreshScheduleDefault, Moment } from "../proptype
 
 import "./ScheduleDialog.css";
 import { currentUser } from "@/services/auth";
+import { RESTRICTED_HOURS } from "@/config/userAndDataRestriction";
 
 const WEEKDAYS_SHORT = moment.weekdaysShort();
 const WEEKDAYS_FULL = moment.weekdays();
@@ -38,7 +39,7 @@ export function TimeEditor(props) {
         minuteStep={5}
         onChange={onChange}
         disabledHours={() => {
-          return currentUser.isAdmin ? [] : [7, 8, 9, 10, 11];
+          return currentUser.isAdmin ? [] : RESTRICTED_HOURS;
         }}
       />
       {showUtc && (

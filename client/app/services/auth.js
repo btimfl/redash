@@ -3,6 +3,7 @@ import { includes, extend } from "lodash";
 import location from "@/services/location";
 import { axios } from "@/services/axios";
 import { notifySessionRestored } from "@/services/restoreSession";
+import { MAX_TIME_DISABLED, MIN_TIME_DISABLED, RESTRICTED_DATA_SOURCES } from "@/config/userAndDataRestriction";
 
 export const currentUser = {
   _isAdmin: undefined,
@@ -30,7 +31,7 @@ export const currentUser = {
 
     if (isAdmin) return false;
 
-    return new Date().getHours() > 7 && new Date().getHours() < 12;
+    return new Date().getHours() > MIN_TIME_DISABLED && new Date().getHours() < MAX_TIME_DISABLED;
   },
 
   isDataSourceRestricted(dataSource) {
@@ -38,7 +39,7 @@ export const currentUser = {
 
     if (isAdmin) return false;
 
-    return ["ReplicaEC6"].includes(dataSource);
+    return RESTRICTED_DATA_SOURCES.includes(dataSource);
   },
 
   get isAdmin() {
