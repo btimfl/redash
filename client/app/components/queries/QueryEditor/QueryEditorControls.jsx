@@ -10,6 +10,7 @@ import AutocompleteToggle from "./AutocompleteToggle";
 import "./QueryEditorControls.less";
 import AutoLimitCheckbox from "@/components/queries/QueryEditor/AutoLimitCheckbox";
 import useUserRestriction from "@/pages/queries/hooks/useUserRestriction";
+import useDataSourceRestriction from "@/pages/queries/hooks/useDataSourceRestriction";
 
 export function ButtonTooltip({ title, shortcut, ...props }) {
   shortcut = humanReadableShortcut(shortcut, 1); // show only primary shortcut
@@ -44,6 +45,7 @@ export default function EditorControl({
   dataSourceSelectorProps,
 }) {
   const isUserRestricted = useUserRestriction();
+  const isDataSourceRestricted = useDataSourceRestriction(executeButtonProps.dataSource);
 
   useEffect(() => {
     const buttons = filter(
@@ -52,13 +54,20 @@ export default function EditorControl({
     );
     if (buttons.length > 0) {
       const shortcuts = fromPairs(map(buttons, b => [b.shortcut, b.disabled ? noop : b.onClick]));
-      isUserRestricted && delete shortcuts["mod+enter, alt+enter, ctrl+enter, shift+enter"];
+      isUserRestricted && isDataSourceRestricted && delete shortcuts["mod+enter, alt+enter, ctrl+enter, shift+enter"];
       KeyboardShortcuts.bind(shortcuts);
       return () => {
         KeyboardShortcuts.unbind(shortcuts);
       };
     }
-  }, [addParameterButtonProps, formatButtonProps, saveButtonProps, executeButtonProps, isUserRestricted]);
+  }, [
+    addParameterButtonProps,
+    formatButtonProps,
+    saveButtonProps,
+    executeButtonProps,
+    isUserRestricted,
+    isDataSourceRestricted,
+  ]);
 
   return (
     <div className="query-editor-controls">
@@ -120,12 +129,12 @@ export default function EditorControl({
       )}
       {executeButtonProps !== false && (
         <ButtonTooltip
-          title={isUserRestricted ? "Action disabled" : executeButtonProps.title}
-          shortcut={isUserRestricted ? null : executeButtonProps.shortcut}>
+          title={isUserRestricted && isDataSourceRestricted ? "Action disabled" : executeButtonProps.title}
+          shortcut={isUserRestricted && isDataSourceRestricted ? null : executeButtonProps.shortcut}>
           <Button
             className="query-editor-controls-button m-l-5"
             type="primary"
-            disabled={executeButtonProps.disabled || isUserRestricted}
+            disabled={executeButtonProps.disabled || (isUserRestricted && isDataSourceRestricted)}
             onClick={executeButtonProps.onClick}
             data-test="ExecuteButton">
             <span className="zmdi zmdi-play" />
@@ -146,6 +155,7 @@ const ButtonPropsPropType = PropTypes.oneOfType([
     onClick: PropTypes.func,
     text: PropTypes.node,
     shortcut: PropTypes.string,
+    dataSource: PropTypes.string,
   }),
 ]);
 

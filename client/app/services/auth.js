@@ -33,6 +33,14 @@ export const currentUser = {
     return new Date().getHours() > 7 && new Date().getHours() < 12;
   },
 
+  isDataSourceRestricted(dataSource) {
+    const isAdmin = this.hasPermission("admin");
+
+    if (isAdmin) return false;
+
+    return ["ReplicaEC6"].includes(dataSource);
+  },
+
   get isAdmin() {
     return this.hasPermission("admin");
   },
