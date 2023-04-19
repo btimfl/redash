@@ -1,6 +1,6 @@
 // EXCLUSIVE
 export const MIN_TIME_DISABLED = 7;
-export const MAX_TIME_DISABLED = 19;
+export const MAX_TIME_DISABLED = 21;
 
 export const RESTRICTED_DATA_SOURCES = ["ReplicaEC6"];
 
